@@ -10,16 +10,20 @@ env:
 phases:
   install:
     runtime-versions:
-      java: corretto11
-      docker: 18
+      java: corretto11 # Maven build requires Java, so use the appropriate version
     commands:
-      # Log in to ECR
+      # Install Docker (if using an environment without Docker pre-installed)
+      - echo Installing Docker...
+      - yum install -y docker
+      - service docker start
+
+      # Log in to Amazon ECR
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --no-include-email --region $REGION)
 
   build:
     commands:
-      # Build the Maven project (adjust according to your project)
+      # Build the Maven project
       - echo Building the Maven project...
       - mvn clean install
 
