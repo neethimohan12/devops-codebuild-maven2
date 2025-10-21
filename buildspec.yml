@@ -12,6 +12,8 @@ phases:
       - mvn clean install
   post_build:
     commands:
+      - echo "Current working directory:"
+      - pwd 
       - echo "Build Completed Successfully"
       - ls -l target/
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
