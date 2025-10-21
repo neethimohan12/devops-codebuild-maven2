@@ -1,0 +1,42 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_ACCOUNT_ID: "<your-aws-account-id>"
+    REGION: "<your-region>"
+    REPOSITORY_NAME: "<your-ecr-repository-name>"
+    IMAGE_TAG: "latest" # You can modify this as per your versioning strategy
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+      docker: 18
+    commands:
+      # Log in to ECR
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $REGION)
+
+  build:
+    commands:
+      # Build the Maven project (adjust according to your project)
+      - echo Building the Maven project...
+      - mvn clean install
+
+      # Build the Docker image
+      - echo Building Docker image...
+      - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .
+
+  post_build:
+    commands:
+      # Tag the Docker image
+      - echo Tagging the Docker image...
+      - docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+
+      # Push the Docker image to ECR
+      - echo Pushing the Docker image to ECR...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+
+artifacts:
+  files:
+    - "**/*"
